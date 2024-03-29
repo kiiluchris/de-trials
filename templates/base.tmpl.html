@@ -1,0 +1,26 @@
+<!doctype HTML>
+<html>
+
+<body>
+    {{if .Error}}
+    <p style="color: red">
+        <strong>Error</strong>
+        {{.Error}}
+    </p>
+    {{end}}
+
+    <form method="POST" action="/refresh">
+        <input type="submit" value="Refresh DB">
+    </form>
+
+    <nav>
+	    <a href="/">Atomicity</a>
+	    <a href="/ui/isolation">Isolation</a>
+	    <a href="/ui/indices">Analysis</a>
+    </nav>
+
+    {{ template "content" . }}
+
+</body>
+
+</html>

@@ -1,0 +1,66 @@
+{{define "content" }}
+    <form method="POST" action="/transfer">
+        Transfer Amount
+        <div>
+            <label for="from">From:
+                <select name="from">
+                    {{range .Accounts}}
+                    <option{{if eq .ID $.From}} selected{{end}}>{{.ID}}</option>
+                        {{end}}
+                </select>
+            </label>
+        </div>
+        <div>
+            <label for="to">To:
+                <select name="to">
+                    {{range .Accounts}}
+                    <option{{if eq .ID $.To}} selected{{end}}>{{.ID}}</option>
+                        {{end}}
+                </select>
+            </label>
+        </div>
+        <div>
+            <label for="amount">Amount:
+                <input type="number" min="0" name="amount" value="{{ .Amount }}">
+            </label>
+        </div>
+        <div>
+            <label>Atomic</label>
+            <input type="radio" name="type" value="1">
+            <label>Atomic</label>
+            <input type="radio" name="type" value="2">
+            <label>Non-Atomic</label>
+            <input type="radio" name="type" value="3">
+            <label>Atomic Failed</label>
+            <input type="radio" name="type" value="4">
+            <label>Non-Atomic Failed</label>
+        </div>
+        <input type="submit" value="Transfer">
+    </form>
+
+    <table>
+        <thead>
+            <tr>
+                <td>ID</td>
+                <td>Balance</td>
+                <td></td>
+            </tr>
+        </thead>
+        <tbody>
+            {{range .Accounts}}
+            <tr>
+                <td>{{.ID}}</td>
+                <td>{{.Balance}}</td>
+                <td>
+                    {{ if eq .ID $.From }}
+                    <span style="color:red;">-{{$.Amount}}</span>
+                    {{end}}
+                    {{ if eq .ID $.To }}
+                    <span style="color:green;">+{{$.Amount}}</span>
+                    {{end}}
+                </td>
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
+{{end}}

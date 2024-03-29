@@ -1,0 +1,134 @@
+{{define "content"}}
+Transaction Isolation Levels
+
+They get stricter in the following order, with default being different for different DBs:
+<ol>
+	<li>Read Uncommited (mysql|sqls)</li>
+	<li>Read Commited (mysql|PG|sqls)</li>
+	<li>Write Commited </li>
+	<li>Repeatable Read (mysql|PG|sqls) </li>
+	<li>Snapshot (sqls)</li>
+	<li>Serializable (sqlite|mysql|PG|sqls) </li>
+	<li>Linearizable</li>
+</ol>
+
+<table class="table" summary="Transaction Isolation Levels" border="1">
+<colgroup>
+  <col>
+  <col>
+  <col>
+  <col>
+  <col>
+</colgroup>
+<thead>
+  <tr>
+    <th>Isolation Level</th>
+    <th>Dirty Read</th>
+    <th>Nonrepeatable Read</th>
+    <th>Phantom Read</th>
+    <th>Serialization Anomaly</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td>Read uncommitted</td>
+    <td>Allowed, but not in PG</td>
+    <td>Possible</td>
+    <td>Possible</td>
+    <td>Possible</td>
+  </tr>
+  <tr>
+    <td>Read committed</td>
+    <td>Not possible</td>
+    <td>Possible</td>
+    <td>Possible</td>
+    <td>Possible</td>
+  </tr>
+  <tr>
+    <td>Repeatable read</td>
+    <td>Not possible</td>
+    <td>Not possible</td>
+    <td>Allowed, but not in PG</td>
+    <td>Possible</td>
+  </tr>
+  <tr>
+    <td>Serializable</td>
+    <td>Not possible</td>
+    <td>Not possible</td>
+    <td>Not possible</td>
+    <td>Not possible</td>
+  </tr>
+</tbody>
+</table>
+
+
+<form onsubmit="runSimulation(event)">
+	{{range .RBtns}}
+	<div>
+	<label>
+		<input type="radio" name="type" value="{{.Value}}"
+		       {{if .Checked}} checked required{{end}}
+		       {{if .Disabled}}disabled{{end}}/>
+		{{.Text}}
+	</label>
+	</div>
+	{{end}}
+
+	<input type="submit" value="Start Simulation">
+</form>
+
+<table id="simtbl" border="1">
+	<thead>
+		<tr>
+			<td>TX ID</td>
+			<td>Action</td>
+			<td>State</td>
+		</tr>
+	</thead>
+	<tbody>
+	</tbody>
+</table>
+
+<template id="simrow">
+	<tr>
+		<td></td>
+		<td></td>
+		<td></td>
+	</tr>
+</template>
+
+<script>
+	let ws = null;
+
+	function runSimulation(e) {
+		e.preventDefault();
+		if (ws) {
+			ws.close();
+		}
+
+		const tbody = document.querySelector("#simtbl tbody");
+
+		ws = new WebSocket("ws://" + location.host + "/isolation");
+		ws.onopen = (event) => {
+			tbody.innerHTML = '';
+			const type = new FormData(e.target).get("type");
+			ws.send(JSON.stringify({type: +type}));
+		};
+
+		const template = document.getElementById("simrow");
+		ws.onmessage = (event) => {
+			const msg = JSON.parse(event.data);
+			console.log(msg);
+			const clone = template.content.cloneNode(true);
+			let ts = clone.querySelectorAll("td");
+			ts[0].textContent = msg.tx;
+			ts[1].textContent = msg.query;
+			ts[2].textContent = JSON.stringify(msg.rows);
+			tbody.appendChild(clone);
+		};
+		ws.onclose = () => {
+			ws = null;
+		};
+	}
+</script>
+{{end}}

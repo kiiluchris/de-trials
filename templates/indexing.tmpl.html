@@ -1,0 +1,19 @@
+{{define "content"}}
+<strong>Record: {{.Count}}</strong>
+<table border="1">
+	<thead>
+		<tr>
+			<td>Query Type</td>
+			<td>Analysis</td>
+		</tr>
+	</thead>
+	<tbody>
+		{{range .Queries}}
+		<tr>
+			<td>{{.Q}}</td>
+			<td>{{.A}}</td>
+		</tr>
+		{{end}}
+	</tbody>
+</table>
+{{end}}
